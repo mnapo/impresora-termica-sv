@@ -3,6 +3,7 @@ import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
 import { BadRequest } from '@feathersjs/errors'
+import { restrictToAdmin, restrictToOwner } from '../../hooks/restrictions'
 
 import {
   productsDataValidator,
@@ -39,7 +40,7 @@ export const products = (app: Application) => {
     const user = context.params.user
 
     if (!user?.id) {
-      throw new BadRequest('No hay usuario autenticado')
+      throw new BadRequest('Not authenticated')
     }
 
     // Agregamos el userId manualmente
@@ -65,8 +66,21 @@ export const products = (app: Application) => {
         schemaHooks.validateQuery(productsQueryValidator),
         schemaHooks.resolveQuery(productsQueryResolver)
       ],
-      find: [],
-      get: [],
+      find: [
+        async (context: HookContext) => {
+          const { user } = context.params
+          if (user.role !== "admin") {
+            context.params.query = {
+              ...context.params.query,
+              userId: user.id
+            }
+          }
+          return context
+        }
+      ],
+      get: [
+        restrictToAdmin
+      ],
       create: [
         schemaHooks.validateData(productsDataValidator),
         assignUserId,
@@ -79,7 +93,10 @@ export const products = (app: Application) => {
       remove: []
     },
     after: {
-      all: []
+      all: [],
+      get: [
+        restrictToOwner
+      ],
     },
     error: {
       all: []
