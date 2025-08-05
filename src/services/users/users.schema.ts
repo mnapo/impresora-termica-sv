@@ -13,7 +13,8 @@ export const userSchema = Type.Object(
   {
     id: Type.Number(),
     email: Type.String(),
-    password: Type.Optional(Type.String())
+    password: Type.Optional(Type.String()),
+    role: Type.String()
   },
   { $id: 'User', additionalProperties: false }
 )
