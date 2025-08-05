@@ -8,4 +8,13 @@ process.on('unhandledRejection', reason => logger.error('Unhandled Rejection %O'
 
 app.listen(port).then(() => {
   logger.info(`Feathers app listening on http://${host}:${port}`)
+  const superUser = {
+      email: 'admin',
+      password: 'admin',
+  };
+  app.service('users').create(superUser).then(user => {
+      console.log('Admin user created:', user)
+  }).catch(error => {
+      console.error('Error creating admin user:', error)
+  })
 })
