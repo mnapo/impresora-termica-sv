@@ -3,7 +3,7 @@ import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
 import { BadRequest } from '@feathersjs/errors'
-import { restrictToAdmin, restrictToOwner } from '../../hooks/restrictions'
+import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
 
 import {
   productsDataValidator,
@@ -78,9 +78,7 @@ export const products = (app: Application) => {
           return context
         }
       ],
-      get: [
-        restrictToAdmin
-      ],
+      get: [],
       create: [
         schemaHooks.validateData(productsDataValidator),
         assignUserId,
@@ -95,7 +93,7 @@ export const products = (app: Application) => {
     after: {
       all: [],
       get: [
-        restrictToOwner
+        restrictToOwnerOrAdmin
       ],
     },
     error: {

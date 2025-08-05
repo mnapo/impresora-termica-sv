@@ -1,7 +1,7 @@
 import { Forbidden, BadRequest } from '@feathersjs/errors'
 import type { HookContext } from '@feathersjs/feathers'
 
-export const restrictToAdmin = async (context: HookContext) => {
+export const restrictToOwnerOrAdmin = async (context: HookContext) => {
   const { user } = context.params
   const id = context.id
   if (!user) {
@@ -12,18 +12,12 @@ export const restrictToAdmin = async (context: HookContext) => {
     throw new BadRequest('Id not specified')
   }
 
-  if (user.role !== 'admin') {
-    throw new Forbidden('Forbidden resource')
+  if (user.role === 'admin') {
+    return context
   }
 
-  return context
-}
-
-export const restrictToOwner = async (context: HookContext) => {
-  const { user } = context.params
-
   if (context.result.userId !== user.id) {
-    throw new Forbidden('No tienes acceso a este producto')
+    throw new Forbidden('Forbidden resource')
   }
 
   return context
