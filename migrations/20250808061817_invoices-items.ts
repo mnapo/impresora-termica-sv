@@ -7,8 +7,7 @@ export async function up(knex: Knex): Promise<void> {
 
     table.string('name').notNullable()
     table.float('price').notNullable()
-    table.float('subtotal').notNullable()
-    table.float('total').notNullable()
+    table.integer('quantity').notNullable()    
     table.integer('userId').unsigned().notNullable().references('id').inTable('users')
     table.integer('invoiceId').unsigned().notNullable().references('id').inTable('invoices')})
 }
