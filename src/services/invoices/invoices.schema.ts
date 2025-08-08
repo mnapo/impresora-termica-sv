@@ -12,10 +12,10 @@ export const invoicesSchema = Type.Object(
   {
     id: Type.Number(),
     type: Type.String(),
+    address: Type.String(),
     subtotal: Type.Number({ minimum: 0 }),
     total: Type.Number({ minimum: 0 }),
     userId: Type.Number(),
-    clientId: Type.Number(),
     createdAt: Type.Optional(Type.String({ format: 'date-time' })),
     updatedAt: Type.Optional(Type.String({ format: 'date-time' }))
   },
@@ -28,7 +28,7 @@ export const invoicesResolver = resolve<Invoices, HookContext<InvoicesService>>(
 export const invoicesExternalResolver = resolve<Invoices, HookContext<InvoicesService>>({})
 
 // Schema for creating new entries
-export const invoicesDataSchema = Type.Pick(invoicesSchema, ['type', 'subtotal', 'total', 'userId', 'clientId'], {
+export const invoicesDataSchema = Type.Pick(invoicesSchema, ['type', 'subtotal', 'total', 'address'], {
   $id: 'InvoicesData'
 })
 export type InvoicesData = Static<typeof invoicesDataSchema>
@@ -44,7 +44,7 @@ export const invoicesPatchValidator = getValidator(invoicesPatchSchema, dataVali
 export const invoicesPatchResolver = resolve<Invoices, HookContext<InvoicesService>>({})
 
 // Schema for allowed query properties
-export const invoicesQueryProperties = Type.Pick(invoicesSchema, ['type', 'subtotal', 'total', 'userId', 'clientId'])
+export const invoicesQueryProperties = Type.Pick(invoicesSchema, ['type', 'subtotal', 'total', 'address'])
 export const invoicesQuerySchema = Type.Intersect(
   [
     querySyntax(invoicesQueryProperties),

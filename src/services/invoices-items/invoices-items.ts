@@ -40,21 +40,6 @@ export const invoicesItems = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
-
-  const assignUserId = async (context: HookContext) => {
-    const user = context.params.user
-
-    if (!user?.id) {
-      throw new BadRequest('Not authenticated')
-    }
-
-    context.data = {
-      ...context.data,
-      userId: user.id
-    }
-
-    return context
-  }
   
   // Initialize hooks
   app.service(invoicesItemsPath).hooks({
@@ -85,7 +70,6 @@ export const invoicesItems = (app: Application) => {
       get: [],
       create: [
         schemaHooks.validateData(invoicesItemsDataValidator),
-        assignUserId,
         schemaHooks.resolveData(invoicesItemsDataResolver)
       ],
       patch: [

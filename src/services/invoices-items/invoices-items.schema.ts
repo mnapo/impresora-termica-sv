@@ -13,7 +13,7 @@ export const invoicesItemsSchema = Type.Object(
     id: Type.Number(),
     name: Type.String({ minLength: 1 }),
     price: Type.Number({ minimum: 0 }),
-    userId: Type.Number(),
+    quantity: Type.Number({ minimum: 1 }),
     invoiceId: Type.Number()
   },
   { $id: 'InvoicesItems', additionalProperties: false }
@@ -25,7 +25,7 @@ export const invoicesItemsResolver = resolve<InvoicesItems, HookContext<Invoices
 export const invoicesItemsExternalResolver = resolve<InvoicesItems, HookContext<InvoicesItemsService>>({})
 
 // Schema for creating new entries
-export const invoicesItemsDataSchema = Type.Pick(invoicesItemsSchema, ['name', 'price', 'userId', 'invoiceId'], {
+export const invoicesItemsDataSchema = Type.Pick(invoicesItemsSchema, ['name', 'price', 'quantity', 'invoiceId'], {
   $id: 'InvoicesItemsData'
 })
 export type InvoicesItemsData = Static<typeof invoicesItemsDataSchema>
@@ -41,7 +41,7 @@ export const invoicesItemsPatchValidator = getValidator(invoicesItemsPatchSchema
 export const invoicesItemsPatchResolver = resolve<InvoicesItems, HookContext<InvoicesItemsService>>({})
 
 // Schema for allowed query properties
-export const invoicesItemsQueryProperties = Type.Pick(invoicesItemsSchema, ['name', 'price', 'userId', 'invoiceId'])
+export const invoicesItemsQueryProperties = Type.Pick(invoicesItemsSchema, ['name', 'price', 'quantity', 'invoiceId'])
 export const invoicesItemsQuerySchema = Type.Intersect(
   [
     querySyntax(invoicesItemsQueryProperties),
