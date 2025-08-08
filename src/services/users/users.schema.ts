@@ -14,7 +14,11 @@ export const userSchema = Type.Object(
     id: Type.Number(),
     email: Type.String(),
     password: Type.Optional(Type.String()),
-    role: Type.String()
+    role: Type.String(),
+    first_name: Type.String(),
+    last_name: Type.String(),
+    cuit: Type.Number(),
+    alias: Type.String(),
   },
   { $id: 'User', additionalProperties: false }
 )
