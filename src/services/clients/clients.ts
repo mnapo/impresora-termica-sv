@@ -1,7 +1,8 @@
-// For more information about this file see https://dove.feathersjs.com/guides/cli/service.html
 import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
+import { BadRequest } from '@feathersjs/errors'
+import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
 
 import {
   clientsDataValidator,
@@ -15,6 +16,7 @@ import {
 } from './clients.schema'
 
 import type { Application } from '../../declarations'
+import type { HookContext } from '@feathersjs/feathers'
 import { ClientsService, getOptions } from './clients.class'
 
 export const clientsPath = 'clients'
@@ -32,6 +34,22 @@ export const clients = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
+
+  const assignUserId = async (context: HookContext) => {
+    const user = context.params.user
+
+    if (!user?.id) {
+      throw new BadRequest('Not authenticated')
+    }
+
+    context.data = {
+      ...context.data,
+      userId: user.id
+    }
+
+    return context
+  }
+
   // Initialize hooks
   app.service(clientsPath).hooks({
     around: {
@@ -43,14 +61,32 @@ export const clients = (app: Application) => {
     },
     before: {
       all: [schemaHooks.validateQuery(clientsQueryValidator), schemaHooks.resolveQuery(clientsQueryResolver)],
-      find: [],
+      find: [
+        async (context: HookContext) => {
+          const { user } = context.params
+          if (user.role !== "admin") {
+            context.params.query = {
+              ...context.params.query,
+              userId: user.id
+            }
+          }
+          return context
+        }
+      ],
       get: [],
-      create: [schemaHooks.validateData(clientsDataValidator), schemaHooks.resolveData(clientsDataResolver)],
+      create: [
+        schemaHooks.validateData(clientsDataValidator),
+        assignUserId,
+        schemaHooks.resolveData(clientsDataResolver)
+      ],
       patch: [schemaHooks.validateData(clientsPatchValidator), schemaHooks.resolveData(clientsPatchResolver)],
       remove: []
     },
     after: {
-      all: []
+      all: [],
+      get: [
+        restrictToOwnerOrAdmin
+      ],
     },
     error: {
       all: []

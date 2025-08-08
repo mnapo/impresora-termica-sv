@@ -1,7 +1,8 @@
-// For more information about this file see https://dove.feathersjs.com/guides/cli/service.html
 import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
+import { BadRequest } from '@feathersjs/errors'
+import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
 
 import {
   invoicesDataValidator,
@@ -15,6 +16,7 @@ import {
 } from './invoices.schema'
 
 import type { Application } from '../../declarations'
+import type { HookContext } from '@feathersjs/feathers'
 import { InvoicesService, getOptions } from './invoices.class'
 
 export const invoicesPath = 'invoices'
@@ -32,6 +34,22 @@ export const invoices = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
+
+  const assignUserId = async (context: HookContext) => {
+    const user = context.params.user
+
+    if (!user?.id) {
+      throw new BadRequest('Not authenticated')
+    }
+
+    context.data = {
+      ...context.data,
+      userId: user.id
+    }
+
+    return context
+  }
+
   // Initialize hooks
   app.service(invoicesPath).hooks({
     around: {
@@ -46,10 +64,22 @@ export const invoices = (app: Application) => {
         schemaHooks.validateQuery(invoicesQueryValidator),
         schemaHooks.resolveQuery(invoicesQueryResolver)
       ],
-      find: [],
+      find: [
+        async (context: HookContext) => {
+          const { user } = context.params
+          if (user.role !== "admin") {
+            context.params.query = {
+              ...context.params.query,
+              userId: user.id
+            }
+          }
+          return context
+        }
+      ],
       get: [],
       create: [
         schemaHooks.validateData(invoicesDataValidator),
+        assignUserId,
         schemaHooks.resolveData(invoicesDataResolver)
       ],
       patch: [
@@ -59,7 +89,10 @@ export const invoices = (app: Application) => {
       remove: []
     },
     after: {
-      all: []
+      all: [],
+      get: [
+        restrictToOwnerOrAdmin
+      ],
     },
     error: {
       all: []

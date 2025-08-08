@@ -1,7 +1,8 @@
-// For more information about this file see https://dove.feathersjs.com/guides/cli/service.html
 import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
+import { BadRequest } from '@feathersjs/errors'
+import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
 
 import {
   invoicesItemsDataValidator,
@@ -15,6 +16,7 @@ import {
 } from './invoices-items.schema'
 
 import type { Application } from '../../declarations'
+import type { HookContext } from '@feathersjs/feathers'
 import { InvoicesItemsService, getOptions } from './invoices-items.class'
 
 export const invoicesItemsPath = 'invoices-items'
@@ -38,6 +40,22 @@ export const invoicesItems = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
+
+  const assignUserId = async (context: HookContext) => {
+    const user = context.params.user
+
+    if (!user?.id) {
+      throw new BadRequest('Not authenticated')
+    }
+
+    context.data = {
+      ...context.data,
+      userId: user.id
+    }
+
+    return context
+  }
+  
   // Initialize hooks
   app.service(invoicesItemsPath).hooks({
     around: {
@@ -52,10 +70,22 @@ export const invoicesItems = (app: Application) => {
         schemaHooks.validateQuery(invoicesItemsQueryValidator),
         schemaHooks.resolveQuery(invoicesItemsQueryResolver)
       ],
-      find: [],
+      find: [
+        async (context: HookContext) => {
+          const { user } = context.params
+          if (user.role !== "admin") {
+            context.params.query = {
+              ...context.params.query,
+              userId: user.id
+            }
+          }
+          return context
+        }
+      ],
       get: [],
       create: [
         schemaHooks.validateData(invoicesItemsDataValidator),
+        assignUserId,
         schemaHooks.resolveData(invoicesItemsDataResolver)
       ],
       patch: [
@@ -65,7 +95,10 @@ export const invoicesItems = (app: Application) => {
       remove: []
     },
     after: {
-      all: []
+      all: [],
+      get: [
+        restrictToOwnerOrAdmin
+      ],
     },
     error: {
       all: []

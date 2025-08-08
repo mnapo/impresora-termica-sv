@@ -1,4 +1,3 @@
-// For more information about this file see https://dove.feathersjs.com/guides/cli/service.html
 import { authenticate } from '@feathersjs/authentication'
 
 import { hooks as schemaHooks } from '@feathersjs/schema'
@@ -43,7 +42,6 @@ export const products = (app: Application) => {
       throw new BadRequest('Not authenticated')
     }
 
-    // Agregamos el userId manualmente
     context.data = {
       ...context.data,
       userId: user.id
