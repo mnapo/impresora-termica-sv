@@ -9,14 +9,14 @@ process.on('unhandledRejection', reason => logger.error('Unhandled Rejection %O'
 app.listen(port).then(() => {
   const superUser = {
     email: 'admin',
-    password: 'admin'
+    password: 'admin',
   };
   app.service('users').create(superUser).then(user => {
     console.log('Admin user created:', user)
   }).catch(error => {
     console.error('Error creating admin user:', error)
   }).then(() => {
-    app.service('users').patch(1, { role: 'admin' }).then(() => {
+    app.service('users').patch(1, { role: 'admin', firstName: 'Admin', lastName: 'Admin' }).then(() => {
       console.log('Admin role assigned to user with ID 1')
     }).catch(error => {
       console.error('Error creating admin user:', error)
