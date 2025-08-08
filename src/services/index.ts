@@ -1,3 +1,5 @@
+import { invoicesItems } from './invoices-items/invoices-items'
+import { invoices } from './invoices/invoices'
 import { clients } from './clients/clients'
 import { products } from './products/products'
 import { user } from './users/users'
@@ -5,6 +7,8 @@ import { user } from './users/users'
 import type { Application } from '../declarations'
 
 export const services = (app: Application) => {
+  app.configure(invoicesItems)
+  app.configure(invoices)
   app.configure(clients)
   app.configure(products)
   app.configure(user)
