@@ -8,6 +8,8 @@ export async function up(knex: Knex): Promise<void> {
     table.string('email').unique()
     table.string('password')
     table.string('role').defaultTo('user')
+    table.string('first_name')
+    table.string('last_name')
   })
 }
 
