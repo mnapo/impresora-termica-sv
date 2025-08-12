@@ -6,7 +6,7 @@
 
 This project uses [Feathers](http://feathersjs.com). An open source framework for building APIs and real-time applications.
 
-## Getting Started
+## Setup
 
 1. Make sure you have [NodeJS](https://nodejs.org/) and [npm](https://www.npmjs.com/) installed.
 2. Install your dependencies
@@ -16,10 +16,17 @@ This project uses [Feathers](http://feathersjs.com). An open source framework fo
     npm install
     ```
 
-3. Start your app
+3. Compile and generate DB
 
     ```
-    npm run compile # Compile TypeScript source
-    npm run migrate # Run migrations to set up the database
+    npm run compile
+    npm run migrate
     npm start
     ```
+
+
+## Run
+    ```
+    npm run dev
+    ```
+    You're ready to login and work through frontend or API endpoints
