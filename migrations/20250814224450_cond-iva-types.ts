@@ -8,9 +8,6 @@ export async function up(knex: Knex): Promise<void> {
 
     table.string('name').notNullable()
   });
-  await app.service('cond-iva-types').create({ name: 'Responsable Inscripto' });
-  await app.service('cond-iva-types').create({ name: 'IVA Excento' });
-  await app.service('cond-iva-types').create({ name: 'Monotributista' });
 }
 
 export async function down(knex: Knex): Promise<void> {
