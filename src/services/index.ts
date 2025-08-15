@@ -1,3 +1,4 @@
+import { condIvaTypes } from './cond-iva-types/cond-iva-types'
 import { invoicesItems } from './invoices-items/invoices-items'
 import { invoices } from './invoices/invoices'
 import { clients } from './clients/clients'
@@ -7,6 +8,7 @@ import { user } from './users/users'
 import type { Application } from '../declarations'
 
 export const services = (app: Application) => {
+  app.configure(condIvaTypes)
   app.configure(invoicesItems)
   app.configure(invoices)
   app.configure(clients)
