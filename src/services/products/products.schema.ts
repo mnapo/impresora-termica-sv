@@ -12,6 +12,7 @@ export const productsSchema = Type.Object(
   {
   id: Type.Number(),
   userId: Type.Number(),
+  code: Type.String({ minLength: 1 }),
   name: Type.String({ minLength: 1 }),
   description: Type.Optional(Type.String()),
   price: Type.Number({ minimum: 0 }),
@@ -27,7 +28,7 @@ export const productsResolver = resolve<Products, HookContext<ProductsService>>(
 export const productsExternalResolver = resolve<Products, HookContext<ProductsService>>({})
 
 // Schema for creating new entries
-export const productsDataSchema = Type.Pick(productsSchema, ['name', 'description', 'price'], {
+export const productsDataSchema = Type.Pick(productsSchema, ['name', 'description', 'price', 'code'], {
   $id: 'ProductsData'
 })
 export type ProductsData = Static<typeof productsDataSchema>
@@ -43,7 +44,7 @@ export const productsPatchValidator = getValidator(productsPatchSchema, dataVali
 export const productsPatchResolver = resolve<Products, HookContext<ProductsService>>({})
 
 // Schema for allowed query properties
-export const productsQueryProperties = Type.Pick(productsSchema, ['name', 'description', 'price'])
+export const productsQueryProperties = Type.Pick(productsSchema, ['name', 'description', 'price', 'code'])
 export const productsQuerySchema = Type.Intersect(
   [
     querySyntax(productsQueryProperties),

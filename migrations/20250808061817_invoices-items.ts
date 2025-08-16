@@ -4,7 +4,8 @@ import type { Knex } from 'knex'
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('invoices-items', table => {
     table.increments('id')
-
+    
+    table.string('code').notNullable()
     table.string('name').notNullable()
     table.float('price').notNullable()
     table.integer('quantity').notNullable()    
