@@ -7,7 +7,7 @@ export async function up(knex: Knex): Promise<void> {
 
     table.string('cuit').notNullable()
     table.string('companyName').notNullable()
-    table.string('condIvaType').unsigned().notNullable().references('id').inTable('cond-iva-types')
+    table.integer('condIvaTypeId').unsigned().references('id').inTable('cond-iva-types')
     table.string('address')
     table.integer('userId').unsigned().notNullable().references('id').inTable('users')
     table.timestamp('createdAt').defaultTo(knex.fn.now())

@@ -6,9 +6,11 @@ export async function up(knex: Knex): Promise<void> {
     table.increments('id')
 
     table.string('type').notNullable()
-    table.float('subtotal').notNullable()
+    table.string('cuit')
+    table.string('companyName')
+    table.string('address')
     table.float('total').notNullable()
-    table.string('address').notNullable()
+    table.integer('condIvaTypeId').unsigned().references('id').inTable('cond-iva-types')
     table.integer('userId').unsigned().notNullable().references('id').inTable('users')
     table.timestamp('createdAt').defaultTo(knex.fn.now())
     table.timestamp('updatedAt').defaultTo(knex.fn.now())

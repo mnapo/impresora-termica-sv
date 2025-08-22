@@ -8,8 +8,14 @@ export async function up(knex: Knex): Promise<void> {
     table.string('email').unique()
     table.string('password')
     table.string('role').defaultTo('user')
+    table.string('cuit')
+    table.string('companyName')
+    table.string('address')
     table.string('firstName')
     table.string('lastName')
+    table.string('cbu')
+    table.string('alias')
+    table.integer('condIvaTypeId').unsigned().references('id').inTable('cond-iva-types')
   })
 }
 
