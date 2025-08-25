@@ -7,7 +7,9 @@ export async function up(knex: Knex): Promise<void> {
 
     table.string('code').notNullable()
     table.string('name').notNullable()
-    table.float('price').notNullable()
+    table.float('price1').notNullable()
+    table.float('price2')
+    table.float('price3')
     table.integer('userId').unsigned().notNullable().references('id').inTable('users')
     table.timestamp('createdAt').defaultTo(knex.fn.now())
     table.timestamp('updatedAt').defaultTo(knex.fn.now())
