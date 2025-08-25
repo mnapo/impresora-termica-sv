@@ -1,43 +1,46 @@
 import { app } from './app'
 import { logger } from './logger'
-import { Application } from './declarations'
 
 const port = app.get('port')
 const host = app.get('host')
 
-const AddConIvaTypes = async (app: Application) => {
+const createCondIvaTypes = async () => {
   try {
+    await app.service('cond-iva-types').find()
     await app.service('cond-iva-types').create({ name: 'Responsable Inscripto' });
-    await app.service('cond-iva-types').create({ name: 'IVA Excento' });
-    await app.service('cond-iva-types').create({ name: 'Monotributista' });
+    await app.service('cond-iva-types').create({ name: 'IVA Exento' });
+    await app.service('cond-iva-types').create({ name: 'Monotributo' });
+    logger.info('\tcondIvaTypes created');
   } catch (error) {
-    logger.error('Error creating cond-iva-types:', error);
+    logger.error('\tError creating cond-iva-types:', error);
   }
 }
+const createSuperUser = async () => {
+  const superUser = {email: 'admin', password: 'admin'};
+  app.service('users').create(superUser).then(user => {
+    logger.info('\tSuper user created:', user)
+  }).catch(error => {
+    console.error('\tError creating super user:', error)
+  }).then(() => {
+    app.service('users').patch(1, { role: 'admin', firstName: 'Admin', lastName: 'Admin' }).then(() => {
+      console.log('\tAdmin role assigned to super user')
+    }).catch(error => {
+      console.error('\tError updating super user:', error)
+    })
+  });
+};
+const populate = async () => {
+  const superUserRecord = await app.service('users').find({query:{email: 'admin'}});
+  superUserRecord.data.length>0?logger.info("\tSuper user already exists"):createSuperUser();
+  const firstCondIvaTypeRecord = await app.service('cond-iva-types').find({query:{name: 'Responsable Inscripto'}});
+  firstCondIvaTypeRecord.data.length>0?logger.info("\tcondIvaTypes already exist"):createCondIvaTypes();
+};
 
 process.on('unhandledRejection', reason => logger.error('Unhandled Rejection %O', reason))
 
-app.listen(port)
-.then(() => {
-  const superUser = {
-    email: 'admin',
-    password: 'admin',
-  };
-  app.service('users').create(superUser).then(user => {
-    console.log('Admin user created:', user)
-  }).catch(error => {
-    console.error('Error creating admin user:', error)
-  }).then(() => {
-    app.service('users').patch(1, { role: 'admin', firstName: 'Admin', lastName: 'Admin' }).then(() => {
-      console.log('Admin role assigned to user with ID 1')
-    }).catch(error => {
-      console.error('Error creating admin user:', error)
-    })
-  })
-  logger.info(`Feathers app listening on http://${host}:${port}`)
-})
-.then(() => AddConIvaTypes(app))
-.catch(error => {
-  logger.error('Error adding ConIvaTypes:', error)
-  process.exit(1)
+app.listen(port).then(() => {
+  logger.info("Running populate procedure...")
+  populate().then(() => {
+    logger.info(`Feathers app listening on http://${host}:${port}`)
+  });
 });
