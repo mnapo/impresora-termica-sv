@@ -14,7 +14,8 @@ const createCondIvaTypes = async () => {
   } catch (error) {
     logger.error('\tError creating cond-iva-types:', error);
   }
-}
+};
+
 const createSuperUser = async () => {
   const superUser = {email: 'admin', password: 'admin'};
   app.service('users').create(superUser).then(user => {
