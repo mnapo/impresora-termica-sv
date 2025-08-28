@@ -28,5 +28,4 @@ This project uses [Feathers](http://feathersjs.com). An open source framework fo
     ```
     npm run dev
     ```
-    ```
     You're ready to login and work through frontend or API endpoints
