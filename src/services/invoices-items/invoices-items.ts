@@ -55,18 +55,7 @@ export const invoicesItems = (app: Application) => {
         schemaHooks.validateQuery(invoicesItemsQueryValidator),
         schemaHooks.resolveQuery(invoicesItemsQueryResolver)
       ],
-      find: [
-        async (context: HookContext) => {
-          const { user } = context.params
-          if (user.role !== "admin") {
-            context.params.query = {
-              ...context.params.query,
-              userId: user.id
-            }
-          }
-          return context
-        }
-      ],
+      find: [],
       get: [],
       create: [
         schemaHooks.validateData(invoicesItemsDataValidator),
