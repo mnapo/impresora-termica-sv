@@ -21,7 +21,6 @@ This project uses [Feathers](http://feathersjs.com). An open source framework fo
     ```
     npm run compile
     npm run migrate
-    npm start
     ```
 
 
