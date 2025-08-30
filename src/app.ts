@@ -11,13 +11,14 @@ import { sqlite } from './sqlite'
 import { authentication } from './authentication'
 import { services } from './services/index'
 import { channels } from './channels'
+import { configurePrintRoute } from './routes/print'
+
 
 const app: Application = koa(feathers())
+configurePrintRoute(app)
 
-// Load our app configuration (see config/ folder)
 app.configure(configuration(configurationValidator))
 
-// Set up Koa middleware
 app.use(cors({
   origin: '*',
   allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
