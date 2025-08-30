@@ -7,7 +7,6 @@ export const configurePrintRoute = (app: Application) => {
   const router = new Router()
 
   router.get('/print', async (ctx) => {
-    // 1) Obtener token (query o header)
     let accessToken = ctx.query.access_token as string | undefined
     if (!accessToken) {
       const authHeader = ctx.request.headers.authorization
@@ -18,7 +17,6 @@ export const configurePrintRoute = (app: Application) => {
       accessToken = authHeader.replace(/^Bearer\s+/i, '')
     }
 
-    // 2) Autenticar: primero con authenticate(), si falla usar verify() y cargar usuario
     let user: any
     try {
       const authResult = await app.service('authentication').authenticate(
@@ -31,7 +29,7 @@ export const configurePrintRoute = (app: Application) => {
         const secret = app.get('authentication')?.secret
         if (!secret) throw new Error('Authentication secret not configured')
 
-        const payload: any = verify(accessToken, secret) // lanza si inválido/expirado
+        const payload: any = verify(accessToken, secret)
         const userId = payload.sub ?? payload.id
         if (!userId) throw new Error('Token payload missing sub/id')
 
@@ -43,17 +41,14 @@ export const configurePrintRoute = (app: Application) => {
       }
     }
 
-    // 3) invoiceId
     const { invoiceId } = ctx.query
     if (!invoiceId) {
       ctx.throw(400, 'invoiceId is required')
       return
     }
 
-    // 4) Cargar factura (pasando user a hooks)
     const invoice = await app.service('invoices').get(Number(invoiceId), { user })
 
-    // 5) Cargar items: intentamos 'invoice-items' y si no existe probamos 'invoices-items'
     let items: any[] = []
     const tryFindItems = async (serviceName: any) => {
       try {
@@ -69,7 +64,6 @@ export const configurePrintRoute = (app: Application) => {
 
     items = (await tryFindItems('invoices-items')) ?? (await tryFindItems('invoices-items')) ?? []
 
-    // 6) Utilidades: formateo de número y fecha, mapping de campos
     const formatNum = (n: number) =>
       Number.isFinite(n) ? n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0,00'
 
@@ -77,7 +71,6 @@ export const configurePrintRoute = (app: Application) => {
       if (!val) return ''
       const d = typeof val === 'number' ? new Date(val) : new Date(String(val))
       if (Number.isNaN(d.getTime())) return String(val)
-      // DD/MM/YYYY HH:mm en locale es-AR
       return d.toLocaleString('es-AR', {
         day: '2-digit', month: '2-digit', year: 'numeric',
         hour: '2-digit', minute: '2-digit', hour12: false
@@ -87,7 +80,6 @@ export const configurePrintRoute = (app: Application) => {
     const mapQty = (it: any) => Number(it.quantity ?? it.qty ?? it.cantidad ?? 1)
     const mapPrice = (it: any) => Number(it.price ?? it.unitPrice ?? it.unit_price ?? it.precio ?? 0)
 
-    // 7) Construir lista plana de items y total
     let computedTotal = 0
     const itemsHtml = items.length
       ? items.map((it) => {
@@ -96,48 +88,79 @@ export const configurePrintRoute = (app: Application) => {
           const subtotal = qty * price
           computedTotal += subtotal
           const name = it.name ?? it.description ?? it.productName ?? it.product?.name ?? 'Item'
-          // cada item como bloque / fila plana
           return `
-            <li style="padding:10px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center">
-              <div style="flex:1">
-                <div style="font-weight:600">${escapeHtml(name)}</div>
+            <li class="item-row">
+              <div class="item-name">
+                ${escapeHtml(name)}
                 ${it.note ? `<div style="font-size:0.9em;color:#666;margin-top:4px">${escapeHtml(String(it.note))}</div>` : ''}
               </div>
-              <div style="width:120px;text-align:center">${qty}</div>
-              <div style="width:120px;text-align:right">$${formatNum(price)}</div>
-              <div style="width:120px;text-align:right;font-weight:600">$${formatNum(subtotal)}</div>
+              <div class="item-price">$${formatNum(price)}</div>
+              <div class="item-qty">x${qty}</div>
+              <div class="item-subtotal">$${formatNum(subtotal)}</div>
             </li>`
         }).join('')
       : '<li style="padding:10px;text-align:center;color:#666">No hay items</li>'
 
     const totalToShow = invoice.total ?? computedTotal
 
-    const userAlias = user?.alias ?? user?.username ?? user?.name ?? '-'
-    const userCbu = user?.cbu ?? user?.bankAccount ?? '-'
-
+    const userCuit = user?.cuit ?? '-'
+    const userCompanyName = user?.companyName ?? '-'
+    const userAddress = user?.address ?? '-'
+    const userAlias = user?.alias ?? '-'
+    const userCbu = user?.cbu ?? '-'
+    const clientCuit = invoice?.cuit ?? '-'
+    const clientCompanyName = invoice?.companyName ?? '-'
+    const clientAddress = invoice?.address ?? '-'
+    let invoiceType = invoice.type ?? ''
+    invoiceType==='arca' ? invoiceType = 'FACTURA' : invoiceType = 'COMPROBANTE'
     ctx.type = 'html'
     ctx.body = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>Factura #${escapeHtml(String(invoice.id))}</title>
+          <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</title>
           <style>
-            body { font-family: sans-serif; padding: 20px; color: #222 }
-            h1 { margin: 0 0 8px 0 }
-            .meta { margin-bottom: 12px; font-size: 0.95em }
+            @font-face {font-family: "Ticketing"; src: url("https://cdn.glitch.global/7512b28f-8b2c-4a3e-bb02-e10754e44fab/public%2FTicketing.ttf?v=1739215600647") format("truetype") }
+            body { font-family: "Ticketing", serif; padding: 1px; color: #222 }
+            .meta { margin-bottom: 12px; font-size: 1.2em }
             .meta div { margin-bottom: 4px }
-            .items { list-style:none; padding:0; margin:0; border:1px solid #eee; border-radius:6px; overflow:hidden }
-            .summary { margin-top:12px; display:flex; justify-content:flex-end; align-items:center; gap:12px; font-weight:700 }
-            .footer { margin-top:18px; font-size:0.95em; color:#333 }
+            .items { list-style:none; padding:0; font-size: 1.4em; margin:0; width: 80% }
+            .item-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              width: 100%;
+              border: 0;
+              padding: 2px 0;
+              gap: 8px;
+            }
+            .item-name { flex: 2 1 0; font-weight:600; min-width: 0; }
+            .item-price, .item-qty, .item-subtotal {
+              flex: 1 1 0;
+              text-align: right;
+              min-width: 60px;
+              font-size: 1em;
+              word-break: keep-all;
+            }
+            .item-subtotal { font-weight:600; }
+            .summary { margin-top:12px; font-size: 1.4em; align-items:left; gap:12px; font-weight:700 }
+            .footer { margin-top:18px; font-size:1.4em; color:#333 }
           </style>
         </head>
         <body onload="window.print()">
-          <h1>Factura #${escapeHtml(String(invoice.id))}</h1>
+          <h3 style="margin-top:0">${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</h3>
 
           <div class="meta">
-            <div><strong>Cliente:</strong> ${escapeHtml(String(invoice.companyName))}</div>
-            <div><strong>Fecha:</strong> ${escapeHtml(formatDateTime(invoice.createdAt))}</div>
+            <div><strong>FECHA:</strong> ${escapeHtml(formatDateTime(invoice.createdAt))}</div>
+            <div><strong>CUIT:</strong> ${escapeHtml(userCuit)}</div>
+            <div><strong>RAZÓN SOCIAL:</strong> ${escapeHtml(userCompanyName.toUpperCase())}</div>
+            <div><strong>DIRECCIÓN:</strong> ${escapeHtml(userAddress.toUpperCase())}</div>
+            <div><strong>-----------------------------</strong></div>
+            <div><strong>CUIT:</strong> ${escapeHtml(clientCuit)}</div>
+            <div><strong>RAZÓN SOCIAL:</strong> ${escapeHtml(clientCompanyName.toUpperCase())}</div>
+            <div><strong>DIRECCIÓN:</strong> ${escapeHtml(clientAddress.toUpperCase())}</div>
+            <div><strong>-----------------------------</strong></div>
           </div>
 
           <ul class="items">
@@ -145,9 +168,11 @@ export const configurePrintRoute = (app: Application) => {
           </ul>
 
           <div class="summary">
-            <div>Total:</div>
-            <div style="min-width:120px;text-align:right">$${formatNum(Number(totalToShow))}</div>
+            <div>TOTAL:</div>
+            <div style="min-width:120px;text-align:left">$${formatNum(Number(totalToShow))}</div>
           </div>
+
+          <div><strong>-----------------------------</strong></div>
 
           <div class="footer">
             <div><strong>Alias:</strong> ${escapeHtml(userAlias)}</div>
