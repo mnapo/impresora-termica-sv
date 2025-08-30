@@ -102,7 +102,6 @@ export const configurePrintRoute = (app: Application) => {
       : '<li style="padding:10px;text-align:center;color:#666">No hay items</li>'
 
     const totalToShow = invoice.total ?? computedTotal
-
     const userCuit = user?.cuit ?? '-'
     const userCompanyName = user?.companyName ?? '-'
     const userAddress = user?.address ?? '-'
@@ -112,14 +111,23 @@ export const configurePrintRoute = (app: Application) => {
     const clientCompanyName = invoice?.companyName ?? '-'
     const clientAddress = invoice?.address ?? '-'
     let invoiceType = invoice.type ?? ''
-    invoiceType==='arca' ? invoiceType = 'FACTURA' : invoiceType = 'COMPROBANTE'
+    let summary = ''
+    if (invoiceType==='arca'){
+      invoiceType = "FACTURA 'A'"
+      summary = `<div style="min-width:120px;text-align:left">TOTAL S/ IVA: $${formatNum(Number(totalToShow))}</div>
+        <div style="min-width:120px;text-align:left">IVA 21%: $${formatNum(Number(totalToShow)*0.21)}</div>
+        <div style="min-width:120px;font-size:1.2em;text-align:left">TOTAL: $${formatNum(Number(totalToShow)+Number(totalToShow)*0.21)}</div>`
+    } else {
+      invoiceType = 'COMPROBANTE'
+      summary = `<div>TOTAL:</div><div style="min-width:120px;text-align:left">$${formatNum(Number(totalToShow))}</div>`
+    }
     ctx.type = 'html'
     ctx.body = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</title>
+          <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id)).padStart(8, '0')}</title>
           <style>
             @font-face {font-family: "Ticketing"; src: url("https://cdn.glitch.global/7512b28f-8b2c-4a3e-bb02-e10754e44fab/public%2FTicketing.ttf?v=1739215600647") format("truetype") }
             body { font-family: "Ticketing", serif; padding: 1px; color: #222 }
@@ -166,13 +174,11 @@ export const configurePrintRoute = (app: Application) => {
           <ul class="items">
             ${itemsHtml}
           </ul>
-
+          <div><strong>-------------------------------------</strong></div>
           <div class="summary">
-            <div>TOTAL:</div>
-            <div style="min-width:120px;text-align:left">$${formatNum(Number(totalToShow))}</div>
+            ${summary}
           </div>
-
-          <div><strong>-----------------------------</strong></div>
+          <div><strong>-------------------------------------</strong></div>
 
           <div class="footer">
             <div><strong>Alias:</strong> ${escapeHtml(userAlias)}</div>
