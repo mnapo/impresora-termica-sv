@@ -81,25 +81,34 @@ export const configurePrintRoute = (app: Application) => {
     const mapPrice = (it: any) => Number(it.price ?? it.unitPrice ?? it.unit_price ?? it.precio ?? 0)
 
     let computedTotal = 0
-    const itemsHtml = items.length
-      ? items.map((it) => {
-          const qty = mapQty(it)
-          const price = mapPrice(it)
-          const subtotal = qty * price
-          computedTotal += subtotal
-          const name = it.name ?? it.description ?? it.productName ?? it.product?.name ?? 'Item'
-          return `
-            <li class="item-row">
-              <div class="item-name">
-                ${escapeHtml(name)}
-                ${it.note ? `<div style="font-size:0.9em;color:#666;margin-top:4px">${escapeHtml(String(it.note))}</div>` : ''}
-              </div>
-              <div class="item-price">$${formatNum(price)}</div>
-              <div class="item-qty">x${qty}</div>
-              <div class="item-subtotal">$${formatNum(subtotal)}</div>
-            </li>`
-        }).join('')
-      : '<li style="padding:10px;text-align:center;color:#666">No hay items</li>'
+
+  const itemsHtml = items.length
+    ? `
+      <table class="items-table" style="width:100%;border-collapse:collapse">
+        <tbody>
+          ${items.map((it) => {
+            const qty = mapQty(it)
+            let price = mapPrice(it)
+            if (invoice.type==='comprobante'){
+              price = price + price * 0.21
+            }
+            const subtotal = qty * price
+            computedTotal += subtotal
+            const name = it.name ?? it.description ?? it.productName ?? it.product?.name ?? 'Item'
+            return `
+              <tr class="item-row">
+                <td style="padding:6px;vertical-align:top">
+                  ${escapeHtml(name)}
+                  ${it.note ? `<div style="font-size:0.85em;color:#666;margin-top:2px">${escapeHtml(String(it.note))}</div>` : ''}
+                </td>
+                <td style="padding:6px;text-align:right">$${formatNum(price)}</td>
+                <td style="padding:6px;text-align:right">${qty}</td>
+                <td style="padding:6px;text-align:right">$${formatNum(subtotal)}</td>
+              </tr>`
+          }).join('')}
+        </tbody>
+      </table>`
+    : '<div style="padding:10px;text-align:center;color:#666">No hay items</div>'
 
     const totalToShow = invoice.total ?? computedTotal
     const userCuit = user?.cuit ?? '-'
@@ -112,14 +121,19 @@ export const configurePrintRoute = (app: Application) => {
     const clientAddress = invoice?.address ?? '-'
     let invoiceType = invoice.type ?? ''
     let summary = ''
+    let footer = ''
     if (invoiceType==='arca'){
       invoiceType = "FACTURA 'A'"
       summary = `<div style="min-width:120px;text-align:left">TOTAL S/ IVA: $${formatNum(Number(totalToShow))}</div>
         <div style="min-width:120px;text-align:left">IVA 21%: $${formatNum(Number(totalToShow)*0.21)}</div>
-        <div style="min-width:120px;font-size:1.2em;text-align:left">TOTAL: $${formatNum(Number(totalToShow)+Number(totalToShow)*0.21)}</div>`
+        <div style="min-width:120px;font-size:2.7em;text-align:left">TOTAL: $${formatNum(Number(totalToShow)+Number(totalToShow)*0.21)}</div>`
     } else {
       invoiceType = 'COMPROBANTE'
       summary = `<div>TOTAL:</div><div style="min-width:120px;text-align:left">$${formatNum(Number(totalToShow))}</div>`
+      footer = `
+        <div style="margin-top:10px">¡Gracias por su compra!</div>
+        <div><strong>Alias:</strong> ${escapeHtml(userAlias)}</div>
+        <div><strong>CBU:</strong> ${escapeHtml(userCbu)}</div>`
     }
     ctx.type = 'html'
     ctx.body = `
@@ -131,29 +145,30 @@ export const configurePrintRoute = (app: Application) => {
           <style>
             @font-face {font-family: "Ticketing"; src: url("https://cdn.glitch.global/7512b28f-8b2c-4a3e-bb02-e10754e44fab/public%2FTicketing.ttf?v=1739215600647") format("truetype") }
             body { font-family: "Ticketing", serif; padding: 1px; color: #222 }
-            .meta { margin-bottom: 12px; font-size: 1.2em }
+            .meta { margin-bottom: 12px; font-size: 2.6em }
             .meta div { margin-bottom: 4px }
-            .items { list-style:none; padding:0; font-size: 1.4em; margin:0; width: 80% }
+            .items { list-style:none; padding:0; font-size: 2.6em; margin:0; width: 80% }
             .item-row {
               display: flex;
               justify-content: space-between;
               align-items: center;
               width: 100%;
+              font-size: 2em;
               border: 0;
               padding: 2px 0;
               gap: 8px;
             }
-            .item-name { flex: 2 1 0; font-weight:600; min-width: 0; }
+            .item-name { flex: 2 1 0; font-size: 2.6em; font-weight:600; min-width: 0; }
             .item-price, .item-qty, .item-subtotal {
               flex: 1 1 0;
               text-align: right;
               min-width: 60px;
-              font-size: 1em;
+              font-size: 2.6em;
               word-break: keep-all;
             }
-            .item-subtotal { font-weight:600; }
-            .summary { margin-top:12px; font-size: 1.4em; align-items:left; gap:12px; font-weight:700 }
-            .footer { margin-top:18px; font-size:1.4em; color:#333 }
+            .item-subtotal { font-weight:600; font-size: 2.6em }
+            .summary { margin-top:12px; font-size: 2.3em; align-items:left; gap:12px; font-weight:700 }
+            .footer { margin-top:18px; font-size:2.1em; color:#333 }
           </style>
         </head>
         <body onload="window.print()">
@@ -170,10 +185,7 @@ export const configurePrintRoute = (app: Application) => {
             <div><strong>DIRECCIÓN:</strong> ${escapeHtml(clientAddress.toUpperCase())}</div>
             <div><strong>-----------------------------</strong></div>
           </div>
-
-          <ul class="items">
             ${itemsHtml}
-          </ul>
           <div><strong>-------------------------------------</strong></div>
           <div class="summary">
             ${summary}
@@ -181,8 +193,7 @@ export const configurePrintRoute = (app: Application) => {
           <div><strong>-------------------------------------</strong></div>
 
           <div class="footer">
-            <div><strong>Alias:</strong> ${escapeHtml(userAlias)}</div>
-            <div><strong>CBU:</strong> ${escapeHtml(userCbu)}</div>
+            ${footer}
           </div>
         </body>
       </html>
