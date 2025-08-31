@@ -15,8 +15,8 @@ export const productsSchema = Type.Object(
   code: Type.String({ minLength: 1 }),
   name: Type.String({ minLength: 1 }),
   price1: Type.Number({ minimum: 0 }),
-  price2: Type.Number({ minimum: 0 }),
-  price3: Type.Number({ minimum: 0 }),
+  price2: Type.Optional(Type.Number({ minimum: 0 })),
+  price3: Type.Optional(Type.Number({ minimum: 0 })),
   createdAt: Type.Optional(Type.String({ format: 'date-time' })),
   updatedAt: Type.Optional(Type.String({ format: 'date-time' }))
   },
