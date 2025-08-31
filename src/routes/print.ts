@@ -84,8 +84,16 @@ export const configurePrintRoute = (app: Application) => {
 
   const itemsHtml = items.length
     ? `
-      <table class="items-table" style="width:100%;border-collapse:collapse">
+      <table class="items-table" style="width:100%;border-collapse:collapse; table-layout: fixed; margin-bottom:12px">
         <tbody>
+          <thead>
+            <tr>
+              <th class="col-qty"></th>
+              <th class="col-desc"></th>
+              <th class="col-price"></th>
+              <th class="col-subtotal"></th>
+            </tr>
+          </thead>
           ${items.map((it) => {
             const qty = mapQty(it)
             let price = mapPrice(it)
@@ -94,13 +102,10 @@ export const configurePrintRoute = (app: Application) => {
             const name = it.name ?? it.description ?? it.productName ?? it.product?.name ?? 'Item'
             return `
               <tr class="item-row">
-                <td style="padding:6px;text-align:right">${qty}</td>
-                <td style="padding:6px;vertical-align:top">
-                  ${escapeHtml(name)}
-                  ${it.note ? `<div style="font-size:0.85em;color:#666;margin-top:2px">${escapeHtml(String(it.note))}</div>` : ''}
-                </td>
-                <td style="padding:6px;text-align:right">$${formatNum(price)}</td>
-                <td style="padding:6px;text-align:right">$${formatNum(subtotal)}</td>
+                <td>${qty}</td>
+                <td>${escapeHtml(name).toUpperCase()}</td>
+                <td>$${formatNum(price)}</td>
+                <td>$${formatNum(subtotal)}</td>
               </tr>`
           }).join('')}
         </tbody>
@@ -141,36 +146,36 @@ export const configurePrintRoute = (app: Application) => {
           <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</title>
           <style>
             @font-face {font-family: "Ticketing"; src: url("https://cdn.glitch.global/7512b28f-8b2c-4a3e-bb02-e10754e44fab/public%2FTicketing.ttf?v=1739215600647") format("truetype") }
-            body { font-family: "Ticketing", serif; padding: 1px; color: #222 }
+            body { font-family: "Ticketing", serif; padding: 0; margin: 0; color: #222 }
             .meta { margin-bottom: 12px; font-size: 2.6em }
             .meta div { margin-bottom: 4px }
-            .items { list-style:none; padding:0; font-size: 2.6em; margin:0; width: 80% }
-            .item-row {
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
+            .items-table {
               width: 100%;
-              font-size: 2.1em;
-              border: 0;
-              padding: 2px 0;
-              gap: 8px;
-              font-weight: 700;
+              border-collapse: collapse;
+              table-layout: fixed;
+              font-size: 2.2em;
+              font-weight: 850;
+              margin-left: 0;
+              padding-left: 0;
             }
-            .item-name { flex: 2 1 0; font-size: 2.6em; font-weight:600; min-width: 0; }
-            .item-price, .item-qty, .item-subtotal {
-              flex: 1 1 0;
-              text-align: right;
-              min-width: 60px;
-              font-size: 2.6em;
-              word-break: keep-all;
+            .items-table td, .items-table th {
+              padding: 6px 4px;
+              vertical-align: top;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
             }
+            .col-qty      { width: 10%; text-align: left; }
+            .col-desc     { width: 40%; text-align: left }
+            .col-price    { width: 25%; text-align: right; }
+            .col-subtotal { width: 25%; text-align: right; padding-left: 12px; }
             .item-subtotal { font-weight:600; font-size: 2.6em }
             .summary { margin-top:12px; font-size: 2.3em; align-items:left; gap:12px; font-weight:700 }
             .footer { margin-top:18px; font-size:2.1em; color:#333 }
           </style>
         </head>
         <body onload="window.print()">
-          <h2 style="margin-top:0">${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id)).padStart(8, '0')}</h3>
+          <h1 style="margin-top:0">${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id)).padStart(8, '0')}</h1>
 
           <div class="meta">
             <div>FECHA: <strong>${escapeHtml(formatDateTime(invoice.createdAt))}</strong></div>
