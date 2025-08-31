@@ -104,8 +104,8 @@ export const configurePrintRoute = (app: Application) => {
               <tr class="item-row">
                 <td>${qty}</td>
                 <td>${escapeHtml(name).toUpperCase()}</td>
-                <td>$${formatNum(price)}</td>
-                <td>$${formatNum(subtotal)}</td>
+                <td>${formatNum(price)}</td>
+                <td>${formatNum(subtotal)}</td>
               </tr>`
           }).join('')}
         </tbody>
