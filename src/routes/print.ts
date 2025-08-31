@@ -89,20 +89,17 @@ export const configurePrintRoute = (app: Application) => {
           ${items.map((it) => {
             const qty = mapQty(it)
             let price = mapPrice(it)
-            if (invoice.type==='comprobante'){
-              price = price + price * 0.21
-            }
             const subtotal = qty * price
             computedTotal += subtotal
             const name = it.name ?? it.description ?? it.productName ?? it.product?.name ?? 'Item'
             return `
               <tr class="item-row">
+                <td style="padding:6px;text-align:right">${qty}</td>
                 <td style="padding:6px;vertical-align:top">
                   ${escapeHtml(name)}
                   ${it.note ? `<div style="font-size:0.85em;color:#666;margin-top:2px">${escapeHtml(String(it.note))}</div>` : ''}
                 </td>
                 <td style="padding:6px;text-align:right">$${formatNum(price)}</td>
-                <td style="padding:6px;text-align:right">${qty}</td>
                 <td style="padding:6px;text-align:right">$${formatNum(subtotal)}</td>
               </tr>`
           }).join('')}
@@ -131,9 +128,9 @@ export const configurePrintRoute = (app: Application) => {
       invoiceType = 'COMPROBANTE'
       summary = `<div>TOTAL:</div><div style="min-width:120px;text-align:left">$${formatNum(Number(totalToShow))}</div>`
       footer = `
-        <div style="margin-top:10px">¡Gracias por su compra!</div>
-        <div><strong>Alias:</strong> ${escapeHtml(userAlias)}</div>
-        <div><strong>CBU:</strong> ${escapeHtml(userCbu)}</div>`
+        <div style="margin-top:10px"><strong>¡Gracias por su compra!<strong></div>
+        <div><strong>Alias: ${escapeHtml(userAlias)}</strong></div>
+        <div><strong>CBU: ${escapeHtml(userCbu)}</strong></div>`
     }
     ctx.type = 'html'
     ctx.body = `
@@ -141,7 +138,7 @@ export const configurePrintRoute = (app: Application) => {
       <html>
         <head>
           <meta charset="utf-8">
-          <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id)).padStart(8, '0')}</title>
+          <title>${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</title>
           <style>
             @font-face {font-family: "Ticketing"; src: url("https://cdn.glitch.global/7512b28f-8b2c-4a3e-bb02-e10754e44fab/public%2FTicketing.ttf?v=1739215600647") format("truetype") }
             body { font-family: "Ticketing", serif; padding: 1px; color: #222 }
@@ -153,10 +150,11 @@ export const configurePrintRoute = (app: Application) => {
               justify-content: space-between;
               align-items: center;
               width: 100%;
-              font-size: 2em;
+              font-size: 2.1em;
               border: 0;
               padding: 2px 0;
               gap: 8px;
+              font-weight: 700;
             }
             .item-name { flex: 2 1 0; font-size: 2.6em; font-weight:600; min-width: 0; }
             .item-price, .item-qty, .item-subtotal {
@@ -172,17 +170,17 @@ export const configurePrintRoute = (app: Application) => {
           </style>
         </head>
         <body onload="window.print()">
-          <h3 style="margin-top:0">${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id))}</h3>
+          <h2 style="margin-top:0">${escapeHtml(invoiceType)} #${escapeHtml(String(invoice.id)).padStart(8, '0')}</h3>
 
           <div class="meta">
-            <div><strong>FECHA:</strong> ${escapeHtml(formatDateTime(invoice.createdAt))}</div>
-            <div><strong>CUIT:</strong> ${escapeHtml(userCuit)}</div>
-            <div><strong>RAZÓN SOCIAL:</strong> ${escapeHtml(userCompanyName.toUpperCase())}</div>
-            <div><strong>DIRECCIÓN:</strong> ${escapeHtml(userAddress.toUpperCase())}</div>
+            <div>FECHA: <strong>${escapeHtml(formatDateTime(invoice.createdAt))}</strong></div>
+            <div>CUIT: <strong>C${escapeHtml(userCuit)}</strong></div>
+            <div>RAZÓN SOCIAL: <strong>${escapeHtml(userCompanyName.toUpperCase())}</strong></div>
+            <div>DIRECCIÓN: <strong>${escapeHtml(userAddress.toUpperCase())}</strong></div>
             <div><strong>-----------------------------</strong></div>
-            <div><strong>CUIT:</strong> ${escapeHtml(clientCuit)}</div>
-            <div><strong>RAZÓN SOCIAL:</strong> ${escapeHtml(clientCompanyName.toUpperCase())}</div>
-            <div><strong>DIRECCIÓN:</strong> ${escapeHtml(clientAddress.toUpperCase())}</div>
+            <div>CUIT: <strong>${escapeHtml(clientCuit)}</strong></div>
+            <div>RAZÓN SOCIAL: <strong>${escapeHtml(clientCompanyName.toUpperCase())}</strong></div>
+            <div>DIRECCIÓN: <strong>${escapeHtml(clientAddress.toUpperCase())}</strong></div>
             <div><strong>-----------------------------</strong></div>
           </div>
             ${itemsHtml}
