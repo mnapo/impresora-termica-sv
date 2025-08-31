@@ -5,10 +5,7 @@
   "origins": [
     "http://localhost:3030"
   ],
-  "paginate": {
-    "default": 10,
-    "max": 50
-  },
+  "paginate": { "default": 100, "max": 1000 },
   "sqlite": {
     "client": "sqlite3",
     "connection": "ticketeador-sv.sqlite",
