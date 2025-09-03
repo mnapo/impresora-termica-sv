@@ -1,11 +1,13 @@
 import { resolve } from '@feathersjs/schema'
 import type { HookContext } from '@feathersjs/feathers'
-import type { Products, ProductsService } from './products.class'
+import type { Products, ProductsInput } from './products.types'
+import type { ProductsService } from './products.class'
 
+// Inyecta userId antes de persistir
 export const productsDataResolver = resolve<Products, HookContext<ProductsService>>({
-  userId: async (_value, _product, context) => context.params.user?.id
+  userId: async (_value, _product: Partial<ProductsInput>, context) => context.params.user?.id
 })
 
 export const productsPatchResolver = resolve<Products, HookContext<ProductsService>>({
-  userId: async (_value, _product, context) => context.params.user?.id
+  userId: async (_value, _product: Partial<ProductsInput>, context) => context.params.user?.id
 })

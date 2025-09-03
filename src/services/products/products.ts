@@ -39,7 +39,6 @@ export const products = (app: Application) => {
       all: [
         authenticate('jwt'),
         schemaHooks.resolveExternal(productsExternalResolver),
-        schemaHooks.resolveResult(productsResolver)
       ]
     },
     before: {
@@ -51,13 +50,13 @@ export const products = (app: Application) => {
       get: [],
       create: [
         schemaHooks.validateData(productsDataValidator),
-        schemaHooks.resolveData(productsDataResolver as any),
-        validateUnique("code")
+        validateUnique("code"),
+        schemaHooks.resolveData(productsDataResolver as any)
       ],
       patch: [
         schemaHooks.validateData(productsPatchValidator),
-        schemaHooks.resolveData(productsPatchResolver as any),
-        validateUnique("code")
+        validateUnique("code"),
+        schemaHooks.resolveData(productsPatchResolver as any)
       ],
       remove: []
     },

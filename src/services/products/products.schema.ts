@@ -11,14 +11,14 @@ import type { ProductsService } from './products.class'
 export const productsSchema = Type.Object(
   {
   id: Type.Number(),
-  userId: Type.Number(),
   code: Type.String({ minLength: 1 }),
   name: Type.String({ minLength: 1 }),
   price1: Type.Number({ minimum: 0 }),
   price2: Type.Optional(Type.Number({ minimum: 0 })),
   price3: Type.Optional(Type.Number({ minimum: 0 })),
   createdAt: Type.Optional(Type.String({ format: 'date-time' })),
-  updatedAt: Type.Optional(Type.String({ format: 'date-time' }))
+  updatedAt: Type.Optional(Type.String({ format: 'date-time' })),
+  userId: Type.Optional(Type.Number())
   },
   { $id: 'Products', additionalProperties: false }
 )
