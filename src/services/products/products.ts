@@ -51,13 +51,13 @@ export const products = (app: Application) => {
       get: [],
       create: [
         schemaHooks.validateData(productsDataValidator),
-        validateUnique("code"),
-        schemaHooks.resolveData(productsDataResolver as any)
+        schemaHooks.resolveData(productsDataResolver as any),
+        validateUnique("code")
       ],
       patch: [
         schemaHooks.validateData(productsPatchValidator),
-        validateUnique("code"),
-        schemaHooks.resolveData(productsPatchResolver as any)
+        schemaHooks.resolveData(productsPatchResolver as any),
+        validateUnique("code")
       ],
       remove: []
     },

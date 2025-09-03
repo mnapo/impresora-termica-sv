@@ -59,13 +59,13 @@ export const clients = (app: Application) => {
       get: [],
       create: [
         schemaHooks.validateData(clientsDataValidator),
+        schemaHooks.resolveData(clientsDataResolver as any),
         validateUnique("cuit"),
-        schemaHooks.resolveData(clientsDataResolver as any)
       ],
       patch: [
         schemaHooks.validateData(clientsPatchValidator),
-        validateUnique("cuit"),
-        schemaHooks.resolveData(clientsPatchResolver as any)
+        schemaHooks.resolveData(clientsPatchResolver as any),
+        validateUnique("cuit")
       ],
       remove: []
     },
