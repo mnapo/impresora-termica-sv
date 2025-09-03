@@ -10,11 +10,9 @@ import {
   invoicesQueryValidator,
   invoicesResolver,
   invoicesExternalResolver,
-  invoicesDataResolver,
-  invoicesPatchResolver,
   invoicesQueryResolver
 } from './invoices.schema'
-
+import { invoicesDataResolver, invoicesPatchResolver } from './invoices.resolvers'
 import type { Application } from '../../declarations'
 import type { HookContext } from '@feathersjs/feathers'
 import { InvoicesService, getOptions } from './invoices.class'
@@ -35,21 +33,6 @@ export const invoices = (app: Application) => {
     events: []
   })
 
-  const assignUserId = async (context: HookContext) => {
-    const user = context.params.user
-
-    if (!user?.id) {
-      throw new BadRequest('Not authenticated')
-    }
-
-    context.data = {
-      ...context.data,
-      userId: user.id
-    }
-
-    return context
-  }
-
   // Initialize hooks
   app.service(invoicesPath).hooks({
     around: {
@@ -64,27 +47,15 @@ export const invoices = (app: Application) => {
         schemaHooks.validateQuery(invoicesQueryValidator),
         schemaHooks.resolveQuery(invoicesQueryResolver)
       ],
-      find: [
-        async (context: HookContext) => {
-          const { user } = context.params
-          if (user.role !== "admin") {
-            context.params.query = {
-              ...context.params.query,
-              userId: user.id
-            }
-          }
-          return context
-        }
-      ],
+      find: [],
       get: [],
       create: [
         schemaHooks.validateData(invoicesDataValidator),
-        assignUserId,
-        schemaHooks.resolveData(invoicesDataResolver)
+        schemaHooks.resolveData(invoicesDataResolver as any)
       ],
       patch: [
         schemaHooks.validateData(invoicesPatchValidator),
-        schemaHooks.resolveData(invoicesPatchResolver)
+        schemaHooks.resolveData(invoicesPatchResolver as any)
       ],
       remove: []
     },

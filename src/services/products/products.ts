@@ -10,11 +10,9 @@ import {
   productsQueryValidator,
   productsResolver,
   productsExternalResolver,
-  productsDataResolver,
-  productsPatchResolver,
   productsQueryResolver
 } from './products.schema'
-
+import { productsDataResolver, productsPatchResolver } from './products.resolvers'
 import type { Application } from '../../declarations'
 import type { HookContext } from '@feathersjs/feathers'
 import { ProductsService, getOptions } from './products.class'
@@ -34,21 +32,6 @@ export const products = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
-
-  const assignUserId = async (context: HookContext) => {
-    const user = context.params.user
-
-    if (!user?.id) {
-      throw new BadRequest('Not authenticated')
-    }
-
-    context.data = {
-      ...context.data,
-      userId: user.id
-    }
-
-    return context
-  }
   
   // Initialize hooks
   app.service(productsPath).hooks({
@@ -64,21 +47,17 @@ export const products = (app: Application) => {
         schemaHooks.validateQuery(productsQueryValidator),
         schemaHooks.resolveQuery(productsQueryResolver)
       ],
-      find: [
-        assignUserId
-      ],
+      find: [],
       get: [],
       create: [
         schemaHooks.validateData(productsDataValidator),
-        assignUserId,
         validateUnique("code"),
-        schemaHooks.resolveData(productsDataResolver)
+        schemaHooks.resolveData(productsDataResolver as any)
       ],
       patch: [
         schemaHooks.validateData(productsPatchValidator),
-        assignUserId,
         validateUnique("code"),
-        schemaHooks.resolveData(productsPatchResolver)
+        schemaHooks.resolveData(productsPatchResolver as any)
       ],
       remove: []
     },

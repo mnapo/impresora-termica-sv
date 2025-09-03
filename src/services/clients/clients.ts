@@ -10,11 +10,9 @@ import {
   clientsQueryValidator,
   clientsResolver,
   clientsExternalResolver,
-  clientsDataResolver,
-  clientsPatchResolver,
   clientsQueryResolver
 } from './clients.schema'
-
+import { clientsDataResolver, clientsPatchResolver } from './clients.resolvers'
 import type { Application } from '../../declarations'
 import type { HookContext } from '@feathersjs/feathers'
 import { ClientsService, getOptions } from './clients.class'
@@ -34,21 +32,6 @@ export const clients = (app: Application) => {
     // You can add additional custom events to be sent to clients here
     events: []
   })
-
-  const assignUserId = async (context: HookContext) => {
-    const user = context.params.user
-
-    if (!user?.id) {
-      throw new BadRequest('Not authenticated')
-    }
-
-    context.data = {
-      ...context.data,
-      userId: user.id
-    }
-
-    return context
-  }
 
   // Initialize hooks
   app.service(clientsPath).hooks({
@@ -76,15 +59,13 @@ export const clients = (app: Application) => {
       get: [],
       create: [
         schemaHooks.validateData(clientsDataValidator),
-        assignUserId,
         validateUnique("cuit"),
-        schemaHooks.resolveData(clientsDataResolver)
+        schemaHooks.resolveData(clientsDataResolver as any)
       ],
       patch: [
         schemaHooks.validateData(clientsPatchValidator),
-        assignUserId,
         validateUnique("cuit"),
-        schemaHooks.resolveData(clientsPatchResolver)
+        schemaHooks.resolveData(clientsPatchResolver as any)
       ],
       remove: []
     },
