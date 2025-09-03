@@ -19,7 +19,7 @@ export const validateUnique = (field: string) => {
     const existing = await service.find({ query });
 
     if (existing.total > 0) {
-      throw new Error(`El valor de "${field}" ya existe para este usuario`);
+      throw new Error(`Error: "${field}" already exists.`);
     }
 
     return context;
