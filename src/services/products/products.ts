@@ -65,16 +65,7 @@ export const products = (app: Application) => {
         schemaHooks.resolveQuery(productsQueryResolver)
       ],
       find: [
-        async (context: HookContext) => {
-          const { user } = context.params
-          if (user.role !== "admin") {
-            context.params.query = {
-              ...context.params.query,
-              userId: user.id
-            }
-          }
-          return context
-        }
+        assignUserId
       ],
       get: [],
       create: [
