@@ -5,7 +5,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable('clients', table => {
     table.increments('id')
 
-    table.string('cuit').notNullable()
+    table.string('cuit').notNullable().unique()
     table.string('companyName').notNullable()
     table.integer('condIvaTypeId').unsigned().references('id').inTable('cond-iva-types')
     table.string('address')

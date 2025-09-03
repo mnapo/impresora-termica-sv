@@ -3,7 +3,7 @@ import { authenticate } from '@feathersjs/authentication'
 import { hooks as schemaHooks } from '@feathersjs/schema'
 import { BadRequest } from '@feathersjs/errors'
 import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
-
+import { validateUnique } from "../../hooks/validate-unique";
 import {
   clientsDataValidator,
   clientsPatchValidator,
@@ -77,9 +77,15 @@ export const clients = (app: Application) => {
       create: [
         schemaHooks.validateData(clientsDataValidator),
         assignUserId,
+        validateUnique("cuit"),
         schemaHooks.resolveData(clientsDataResolver)
       ],
-      patch: [schemaHooks.validateData(clientsPatchValidator), schemaHooks.resolveData(clientsPatchResolver)],
+      patch: [
+        schemaHooks.validateData(clientsPatchValidator),
+        assignUserId,
+        validateUnique("cuit"),
+        schemaHooks.resolveData(clientsPatchResolver)
+      ],
       remove: []
     },
     after: {
