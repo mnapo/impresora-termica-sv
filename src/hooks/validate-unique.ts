@@ -1,5 +1,5 @@
 import type { HookContext } from '@feathersjs/feathers'
-import { BadRequest } from '@feathersjs/errors'
+import { Conflict } from '@feathersjs/errors'
 
 export const validateUnique = (field: string) => {
   return async (context: HookContext) => {
@@ -23,7 +23,10 @@ export const validateUnique = (field: string) => {
     const count = Array.isArray(existing) ? existing.length : existing.total ?? 0
 
     if (count > 0) {
-      throw new BadRequest(`Record already exist`)
+      throw new Conflict('El código ya existe para este usuario', {
+        field,
+        value: data[field]
+      })
     }
 
     return context
