@@ -39,33 +39,21 @@ export const clients = (app: Application) => {
       all: [
         authenticate('jwt'),
         schemaHooks.resolveExternal(clientsExternalResolver),
-        schemaHooks.resolveResult(clientsResolver)
       ]
     },
     before: {
       all: [schemaHooks.validateQuery(clientsQueryValidator), schemaHooks.resolveQuery(clientsQueryResolver)],
-      find: [
-        async (context: HookContext) => {
-          const { user } = context.params
-          if (user.role !== "admin") {
-            context.params.query = {
-              ...context.params.query,
-              userId: user.id
-            }
-          }
-          return context
-        }
-      ],
+      find: [],
       get: [],
       create: [
         schemaHooks.validateData(clientsDataValidator),
-        schemaHooks.resolveData(clientsDataResolver as any),
         validateUnique("cuit"),
+        schemaHooks.resolveData(clientsDataResolver as any),
       ],
       patch: [
         schemaHooks.validateData(clientsPatchValidator),
+        validateUnique("cuit"),
         schemaHooks.resolveData(clientsPatchResolver as any),
-        validateUnique("cuit")
       ],
       remove: []
     },

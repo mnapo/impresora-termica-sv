@@ -15,9 +15,9 @@ export const clientsSchema = Type.Object(
     companyName: Type.Optional(Type.String()),
     condIvaTypeId: Type.Optional(Type.Number()),
     address: Type.Optional(Type.String()),
-    userId: Type.Number(),
     createdAt: Type.Optional(Type.String({ format: 'date-time' })),
-    updatedAt: Type.Optional(Type.String({ format: 'date-time' }))
+    updatedAt: Type.Optional(Type.String({ format: 'date-time' })),
+    userId: Type.Optional(Type.Number())
   },
   { $id: 'Clients', additionalProperties: false }
 )
@@ -28,7 +28,7 @@ export const clientsResolver = resolve<Clients, HookContext<ClientsService>>({})
 export const clientsExternalResolver = resolve<Clients, HookContext<ClientsService>>({})
 
 // Schema for creating new entries
-export const clientsDataSchema = Type.Pick(clientsSchema, ['cuit', 'companyName', 'condIvaTypeId', 'address'], {
+export const clientsDataSchema = Type.Pick(clientsSchema, ['userId', 'cuit', 'companyName', 'condIvaTypeId', 'address'], {
   $id: 'ClientsData'
 })
 export type ClientsData = Static<typeof clientsDataSchema>
@@ -44,7 +44,7 @@ export const clientsPatchValidator = getValidator(clientsPatchSchema, dataValida
 export const clientsPatchResolver = resolve<Clients, HookContext<ClientsService>>({})
 
 // Schema for allowed query properties
-export const clientsQueryProperties = Type.Pick(clientsSchema, ['cuit', 'companyName', 'condIvaTypeId', 'address'])
+export const clientsQueryProperties = Type.Pick(clientsSchema, ['userId', 'cuit', 'companyName', 'condIvaTypeId', 'address'])
 export const clientsQuerySchema = Type.Intersect(
   [
     querySyntax(clientsQueryProperties),

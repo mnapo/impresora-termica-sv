@@ -29,7 +29,7 @@ export const productsResolver = resolve<Products, HookContext<ProductsService>>(
 export const productsExternalResolver = resolve<Products, HookContext<ProductsService>>({})
 
 // Schema for creating new entries
-export const productsDataSchema = Type.Pick(productsSchema, ['code', 'name', 'price1', 'price2', 'price3'], {
+export const productsDataSchema = Type.Pick(productsSchema, ['userId', 'code', 'name', 'price1', 'price2', 'price3'], {
   $id: 'ProductsData'
 })
 export type ProductsData = Static<typeof productsDataSchema>
@@ -45,7 +45,7 @@ export const productsPatchValidator = getValidator(productsPatchSchema, dataVali
 export const productsPatchResolver = resolve<Products, HookContext<ProductsService>>({})
 
 // Schema for allowed query properties
-export const productsQueryProperties = Type.Pick(productsSchema, ['code', 'name', 'price1', 'price2', 'price3'])
+export const productsQueryProperties = Type.Pick(productsSchema, ['userId', 'code', 'name', 'price1', 'price2', 'price3'])
 export const productsQuerySchema = Type.Intersect(
   [
     querySyntax(productsQueryProperties),
