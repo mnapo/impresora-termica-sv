@@ -10,7 +10,6 @@ import type { ClientsService } from './clients.class'
 // Main data model schema
 export const clientsSchema = Type.Object(
   {
-    id: Type.Number(),
     cuit: Type.Optional(Type.String()),
     companyName: Type.Optional(Type.String()),
     condIvaTypeId: Type.Optional(Type.Number()),

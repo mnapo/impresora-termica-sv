@@ -23,7 +23,7 @@ export const validateUnique = (field: string) => {
     const count = Array.isArray(existing) ? existing.length : existing.total ?? 0
 
     if (count > 0) {
-      throw new Conflict('El código ya existe para este usuario', {
+      throw new Conflict('Record already exists', {
         field,
         value: data[field]
       })

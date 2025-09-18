@@ -3,7 +3,8 @@ import { authenticate } from '@feathersjs/authentication'
 import { hooks as schemaHooks } from '@feathersjs/schema'
 import { BadRequest } from '@feathersjs/errors'
 import { restrictToOwnerOrAdmin } from '../../hooks/restrictions'
-import { validateUnique } from "../../hooks/validate-unique";
+import { validateUnique } from "../../hooks/validate-unique"
+import { stripId } from '../../hooks/strip-id'
 import {
   clientsDataValidator,
   clientsPatchValidator,
